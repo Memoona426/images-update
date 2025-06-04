@@ -15,6 +15,8 @@ const swaggerDocs = swaggerJSDoc(swaggerOptions);
 const app = express();
 app.use(express.json());
 
+
+
 app.use("/api", routes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
@@ -22,6 +24,7 @@ const httpServer = http.createServer(app);
 
 const startServer = async () => {
   try {
+    console.log(" Hello from startServer - checking for Git commit!");
     await connectToDb();
     await checkS3Connection()
     await setUpCorsOnS3()
