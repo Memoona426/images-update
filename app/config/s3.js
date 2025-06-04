@@ -1,0 +1,61 @@
+const aws = require('aws-sdk');
+
+const spacesEndpoint = new aws.Endpoint(process.env.ENDPOINTHTTP);
+const s3 = new aws.S3({
+    endpoint: spacesEndpoint,
+    accessKeyId: process.env.ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_KEY,
+    signatureVersion: 'v4',
+    region: 'us-east-1'
+});
+
+const setUpCorsOnS3 = async () => {
+    try {
+        const corsParams = {
+            Bucket: process?.env?.SPACENAME,
+            CORSConfiguration: {
+                CORSRules: [
+                    {
+                        AllowedOrigins: ['*'],
+                        AllowedMethods: ['GET', 'PUT', 'POST', 'DELETE', 'HEAD'],
+                        AllowedHeaders: ['*'],
+                        MaxAgeSeconds: 3000
+                    }
+                ]
+            }
+        };
+        await s3.putBucketCors(corsParams).promise();
+        return true
+    } catch (error) {
+        return false
+    }
+}
+
+const checkS3Connection = async () => {
+    try {
+        await s3.listBuckets().promise()
+        return true
+    } catch (error) {
+        return false
+    }
+}
+
+const deleteImageFromS3 = async (key) => {
+    const params = {
+        Bucket: process.env.SPACENAME,
+        Key: key,
+    };
+
+    try {
+        await s3.deleteObject(params).promise();
+        return { success: true, message: 'Image deleted successfully' };
+    } catch (error) {
+        return { success: false, message: 'Error deleting image', error };
+    }
+};
+
+module.exports = {
+    s3,
+    checkS3Connection,
+    setUpCorsOnS3
+}
